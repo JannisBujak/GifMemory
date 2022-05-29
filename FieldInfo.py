@@ -1,4 +1,5 @@
 
+from dataclasses import field
 import sys, pygame
 import random
 from GIFImage import GIF_Image
@@ -16,6 +17,8 @@ class FieldInfo:
     def __eq__(self, __o: object) -> bool:
         return self.id == __o.id
 
+    def reset(self):
+        self.isopen = False
 
     def toggleOpen(self):
         self.isopen = not self.isopen
@@ -26,6 +29,7 @@ class FieldInfo:
 
     def getImage(self) -> GIF_Image:
         return self.img
+
 
 
 class Field:
@@ -43,6 +47,11 @@ class Field:
                 self.fields.append(FieldInfo(id, "img/fuesse_baumeln.gif"))
             else:
                 self.fields.append(FieldInfo(id, imagenames[id]))
+        random.shuffle(self.fields)
+
+    def restart(self):
+        for i in range (len(self.fields)):
+            self.fields[i].reset()
         random.shuffle(self.fields)
 
     def getFieldAt(self, x : int, y : int) -> FieldInfo:

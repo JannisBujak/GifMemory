@@ -1,7 +1,11 @@
 
+from json import JSONDecodeError
 import sys, pygame
 from turtle import Screen
+
 import random
+import json
+
 from FieldInfo import FieldInfo, Field
 from GIFImage import GIF_Image
 
@@ -29,8 +33,8 @@ def drawPlayfield(playfield : Field, screen):
     cardwidth = coordwidth/playfield.width
     cardheight = coordheight/playfield.height
     
-    for y in range(playfield.width):
-        for x in range(playfield.height):
+    for y in range(playfield.height):
+        for x in range(playfield.width):
             field = playfield.getFieldAt(x, y)
             if field is not None:
                 gif = field.getImage() if field.isOpen() else default_image()
@@ -46,15 +50,20 @@ def reactToClick(playfield : Field, screen, x : int, y : int):
     opened_field = playfield.openAt(x/cardwidth, y/cardheight)
 
 def main():
-    pics_vert, pics_horz = 2, 2
     size = width, height = 1500, 750
     
     black = 0, 0, 0
 
-    imagenames = [ "img/fuesse_baumeln.gif", "img/bird-snuggle.gif" ]
-    #imagenames = [ "img/bird-snuggle.gif", "img/bird-snuggle.gif" ]
-
+    #imagenames = [ "img/fuesse_baumeln.gif", "img/bird-snuggle.gif" ]
     
+    f = open('init.json')
+  
+    # returns JSON object as a dictionary
+    data = json.load(f)
+    
+    pics_vert, pics_horz = imagecount = data["imagecount"]
+    imagenames = data["images"]
+
     pygame.init()
 
     screen = pygame.display.set_mode(size, pygame.RESIZABLE)
@@ -70,9 +79,20 @@ def main():
             if event.type == pygame.MOUSEBUTTONUP:
                 x, y = pygame.mouse.get_pos()
                 reactToClick(playfield, screen, x, y)
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    playfield.restart()            
 
         screen.fill(black)
         drawPlayfield(playfield, screen)
+        
+        myfont = pygame.font.SysFont("monospace", 15)
+        score = [0, 0]
+        label1 = myfont.render(f"Player 1:  {score[0]}", 1, (255,255,255))
+        screen.blit(label1, (100, 30))
+        label2 = myfont.render(f"Player 2:  {score[1]}", 1, (255,255,255))
+        screen.blit(label2, (1400, 30))
+
         pygame.display.flip()
 
 
