@@ -1,0 +1,3 @@
+cd \GifMemory
+
+git pull
