@@ -13,6 +13,7 @@ class GIF_Image:
         self.num_frames = 1
         self.images = []
         tryget = getattr(imageObj, "is_animated", None)
+
         if tryget is None or not tryget:
             self.images.append(pygame.image.load(filepath))
         else:

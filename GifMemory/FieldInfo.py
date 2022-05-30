@@ -1,16 +1,17 @@
 
+from concurrent.futures import thread
 from dataclasses import field
 import sys, pygame
 from numpy import empty
 import random
+import threading
 from GIFImage import GIF_Image
 
 class FieldInfo:
-    def __init__(self, id, imgpath) -> None:
-        self.imgpath = imgpath
+    def __init__(self, id, image) -> None:
         self.isopen = False
         self.id = id
-        img = GIF_Image(self.imgpath)
+        img = image
 
         #img = pygame.image.load(self.imgpath)
         self.img = img
@@ -39,14 +40,12 @@ class Field:
         self.fields = []
         self.openfields = []
 
-    def createFields(self, imagenames = []):
+    def createFields(self, imagemap = []):
         self.fields = []
         for i in range(self.width * self.height):
             id = int(i/2)
-            if len(imagenames) <= id:
-                self.fields.append(FieldInfo(id, "img/fuesse_baumeln.gif"))
-            else:
-                self.fields.append(FieldInfo(id, imagenames[id]))
+            if len(imagemap) > id:
+                self.fields.append(FieldInfo(id, imagemap[id]))
         random.shuffle(self.fields)
 
     def restart(self):
@@ -74,7 +73,7 @@ class Field:
             # close temporarily opened images
             for f in self.openfields:
                 f.reset()
-            self.openfields = []
+            self.openfields = [field]
 
         elif len(self.openfields) == 1:
             if field == self.openfields[0]:
@@ -85,6 +84,7 @@ class Field:
         else:
             # no temporarily opened Image yet
             self.openfields.append(field)
+        pass
 
 
         

@@ -1,6 +1,10 @@
 
+from concurrent.futures import thread
+from datetime import datetime
 from json import JSONDecodeError
 import os, sys, pygame
+from time import time
+import threading
 from turtle import Screen
 
 import random
@@ -8,6 +12,9 @@ import json
 
 from FieldInfo import FieldInfo, Field
 from GIFImage import GIF_Image
+
+from PIL import Image
+from PIL import GifImagePlugin
 
 
 framepercent = 0.05
@@ -47,7 +54,34 @@ def reactToClick(playfield : Field, screen, x : int, y : int):
     winwidth, winheight = screen.get_size()
     cardwidth = winwidth/playfield.width
     cardheight = winheight/playfield.height
-    opened_field = playfield.openAt(x/cardwidth, y/cardheight)
+    opened_field = playfield.openAt(int(x/cardwidth), int(y/cardheight))
+
+def precreateSubgifs(imagenames):
+    gifs = []
+    for filepath in imagenames:
+        gifs.append(GIF_Image(filepath))
+    return gifs
+
+    
+def precreateSubgifs(imagenames):
+    gifs = []
+    threads = []
+    def addToGifs(filepath):
+        gifs.append(GIF_Image(filepath))
+    t_start = datetime.now()
+
+    for imagename in imagenames:
+        t = threading.Thread(target=addToGifs, args=(imagename,))
+        threads.append(t)
+        t.start()
+    for t in threads:
+        t.join()
+     
+    t_end = datetime.now()
+    t_diff = t_end-t_start
+    print(f"Loading took {t_diff.seconds}{int(t_diff.microseconds/1000)} ms")
+
+    return gifs
 
 def main():
     size = width, height = 1500, 750
@@ -55,28 +89,32 @@ def main():
     black = 0, 0, 0
 
     #imagenames = [ "img/fuesse_baumeln.gif", "img/bird-snuggle.gif" ]
-    cwd = os.getcwd()
-    f = open('init.json')
+    filedir = os.path.dirname(os.path.abspath(__file__))
+    f = open(f"{filedir}/init.json")
   
+    
+
     # returns JSON object as a dictionary
     data = json.load(f)
     
     pics_vert, pics_horz = imagecount = data["imagecount"]
-    imagenames = data["images"]
+
+    #imagenames = data["images"]
+    imagemap = precreateSubgifs(data["images"])
 
     pygame.init()
 
     screen = pygame.display.set_mode(size, pygame.RESIZABLE)
     
     playfield = Field(pics_horz, pics_vert)
-    playfield.createFields(imagenames)
+    playfield.createFields(imagemap)
 
     drawPlayfield(playfield, screen)
 
     while 1:
         for event in pygame.event.get():
             if event.type == pygame.QUIT: sys.exit()
-            if event.type == pygame.MOUSEBUTTONUP:
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = pygame.mouse.get_pos()
                 reactToClick(playfield, screen, x, y)
             if event.type == pygame.KEYDOWN:
