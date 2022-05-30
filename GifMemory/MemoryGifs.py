@@ -1,6 +1,6 @@
 
 from json import JSONDecodeError
-import sys, pygame
+import os, sys, pygame
 from turtle import Screen
 
 import random
@@ -55,7 +55,7 @@ def main():
     black = 0, 0, 0
 
     #imagenames = [ "img/fuesse_baumeln.gif", "img/bird-snuggle.gif" ]
-    
+    cwd = os.getcwd()
     f = open('init.json')
   
     # returns JSON object as a dictionary
