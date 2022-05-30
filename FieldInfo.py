@@ -1,6 +1,7 @@
 
 from dataclasses import field
 import sys, pygame
+from numpy import empty
 import random
 from GIFImage import GIF_Image
 
@@ -31,13 +32,12 @@ class FieldInfo:
         return self.img
 
 
-
 class Field:
     def __init__(self, width, height):
         self.width = width
         self.height = height
         self.fields = []
-        self.openfield = None
+        self.openfields = []
 
     def createFields(self, imagenames = []):
         self.fields = []
@@ -50,6 +50,7 @@ class Field:
         random.shuffle(self.fields)
 
     def restart(self):
+        self.openfields = []
         for i in range (len(self.fields)):
             self.fields[i].reset()
         random.shuffle(self.fields)
@@ -66,16 +67,24 @@ class Field:
         if field is None or field.isOpen():
             return
 
-        if self.openfield is None:
-            field.toggleOpen()
-            self.openfield = field
-        elif field is not self.openfield:
-            # nicht "doppelt" geklickt
-            if field == self.openfield:
-                field.toggleOpen()
+        # nicht "doppelt" geklickt
+        field.toggleOpen()
+
+        if len(self.openfields) > 1:
+            # close temporarily opened images
+            for f in self.openfields:
+                f.reset()
+            self.openfields = []
+
+        elif len(self.openfields) == 1:
+            if field == self.openfields[0]:
+                # success, temporarily opened Images stay opened
+                self.openfields = []
             else:
-                self.openfield.toggleOpen() 
-            self.openfield = None
+                self.openfields.append(field)
+        else:
+            # no temporarily opened Image yet
+            self.openfields.append(field)
 
 
         
