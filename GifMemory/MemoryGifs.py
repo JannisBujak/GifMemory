@@ -19,9 +19,12 @@ from PIL import GifImagePlugin
 
 framepercent = 0.05
 
+def filedir():
+    return os.path.dirname(os.path.abspath(__file__))
+
 def default_image():
     #return pygame.image.load("img/questionmark.jpg")
-    default = GIF_Image("img/questionmark.jpg")
+    default = GIF_Image(f"{filedir()}/img/questionmark.jpg")
     return default
 
 def createFields(fields_horiz, fields_vert, imagenames = []):
@@ -55,13 +58,6 @@ def reactToClick(playfield : Field, screen, x : int, y : int):
     cardwidth = winwidth/playfield.width
     cardheight = winheight/playfield.height
     opened_field = playfield.openAt(int(x/cardwidth), int(y/cardheight))
-
-def precreateSubgifs(imagenames):
-    gifs = []
-    for filepath in imagenames:
-        gifs.append(GIF_Image(filepath))
-    return gifs
-
     
 def precreateSubgifs(imagenames):
     gifs = []
@@ -71,7 +67,7 @@ def precreateSubgifs(imagenames):
     t_start = datetime.now()
 
     for imagename in imagenames:
-        t = threading.Thread(target=addToGifs, args=(imagename,))
+        t = threading.Thread(target=addToGifs, args=(f"{filedir()}/{imagename}",))
         threads.append(t)
         t.start()
     for t in threads:
@@ -89,11 +85,9 @@ def main():
     black = 0, 0, 0
 
     #imagenames = [ "img/fuesse_baumeln.gif", "img/bird-snuggle.gif" ]
-    filedir = os.path.dirname(os.path.abspath(__file__))
-    f = open(f"{filedir}/init.json")
-  
     
-
+    f = open(f"{filedir()}/init.json")
+  
     # returns JSON object as a dictionary
     data = json.load(f)
     
