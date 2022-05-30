@@ -1,2 +1,2 @@
-cd \GifMemory
-python3 .\MemoryGifs.py
+cd ./GifMemory
+python3 ./MemoryGifs.py
