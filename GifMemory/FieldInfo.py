@@ -39,6 +39,11 @@ class Field:
         self.height = height
         self.fields = []
         self.openfields = []
+        self.init_player_scores()
+        
+    def init_player_scores(self):
+        self.active_player = 0
+        self.player_scores = [0, 0]
 
     def createFields(self, imagemap = []):
         self.fields = []
@@ -52,6 +57,7 @@ class Field:
         self.openfields = []
         for i in range (len(self.fields)):
             self.fields[i].reset()
+        self.init_player_scores()
         random.shuffle(self.fields)
 
     def getFieldAt(self, x : int, y : int) -> FieldInfo:
@@ -79,8 +85,10 @@ class Field:
             if field == self.openfields[0]:
                 # success, temporarily opened Images stay opened
                 self.openfields = []
+                self.player_scores[self.active_player] = self.player_scores[self.active_player] + 1
             else:
                 self.openfields.append(field)
+                self.active_player = (int)(not self.active_player)
         else:
             # no temporarily opened Image yet
             self.openfields.append(field)

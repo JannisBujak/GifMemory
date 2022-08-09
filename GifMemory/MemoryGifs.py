@@ -5,7 +5,7 @@ from json import JSONDecodeError
 import os, sys, pygame
 from time import time
 import threading
-from turtle import Screen
+# from turtle import Screen
 
 import random
 import json
@@ -16,8 +16,10 @@ from GIFImage import GIF_Image
 from PIL import Image
 from PIL import GifImagePlugin
 
+black = 0, 0, 0    
 
-framepercent = 0.05
+framepercentX = 0.05
+framepercentY = 0.1
 
 def filedir():
     return os.path.dirname(os.path.abspath(__file__))
@@ -30,10 +32,7 @@ def default_image():
 def createFields(fields_horiz, fields_vert, imagenames = []):
     local_fields = []
     for i in range(fields_horiz*fields_vert):
-        if len(imagenames) <= (2*i):
-            local_fields.append("fuesse_baumeln.gif")
-        else:
-            local_fields.append(imagenames[i*2])
+        local_fields.append(imagenames[i*2])
     random.shuffle(local_fields)
     return local_fields
             
@@ -49,8 +48,8 @@ def drawPlayfield(playfield : Field, screen):
             if field is not None:
                 gif = field.getImage() if field.isOpen() else default_image()
                 fieldimg = gif.getFrame(int(pygame.time.get_ticks() *15 / 1000))
-                fieldimg = pygame.transform.scale(fieldimg, (cardwidth*(1-2*framepercent), cardheight*(1-2*framepercent)))
-                screen.blit(fieldimg, ((x+framepercent)*cardwidth, (y+framepercent)*cardheight))
+                fieldimg = pygame.transform.scale(fieldimg, (cardwidth*(1-2*framepercentX), cardheight*(1-2*framepercentY)))
+                screen.blit(fieldimg, ((x+framepercentX)*cardwidth, (y+framepercentY)*cardheight))
             
 
 def reactToClick(playfield : Field, screen, x : int, y : int):
@@ -79,13 +78,39 @@ def precreateSubgifs(imagenames):
 
     return gifs
 
-def main():
-    size = width, height = 1500, 750
-    
-    black = 0, 0, 0
 
-    #imagenames = [ "img/fuesse_baumeln.gif", "img/bird-snuggle.gif" ]
+def renderLabel(i: int, screen, playfield):
+    width, height = screen.get_size()
+    font = pygame.font.SysFont("monospace", (int)((height/20)), bold=(playfield.active_player==i))
     
+    label = font.render(f"Player {i}:  {playfield.player_scores[i]}", 1, (255,255,255))
+    if i > 0:
+        screen.blit(label, (width*(19/20)-label.get_width(), height/20))
+    else:
+        screen.blit(label, (width/20, height/20))
+    
+
+def adaptElementSizes(screen, playfield):
+    screen.fill(black)
+    drawPlayfield(playfield, screen)
+    
+    
+    renderLabel(0, screen, playfield)
+    renderLabel(1, screen, playfield)
+    """
+    width, height = screen.get_size()
+    normalFont = pygame.font.SysFont("monospace", (int)(height/20))
+    boldFont = pygame.font.Font(normalFont, bold=True)
+    label1 = myfont.render(f"Player 1:  {playfield.player_scores[0]}", 1, (255,255,255))
+    lw = label1.get_width()
+    screen.blit(label1, (width/20, height/20))
+    label2 = myfont.render(f"Player 2:  {playfield.player_scores[1]}", 1, (255,255,255))
+    screen.blit(label2, ((int)(width*(19/20) - label2.get_width()), (int)(height/20)))
+    """
+
+def main():
+    #imagenames = [ "img/fuesse_baumeln.gif", "img/bird-snuggle.gif" ]
+    initial_size = 1500, 750
     f = open(f"{filedir()}/init.json")
   
     # returns JSON object as a dictionary
@@ -93,12 +118,11 @@ def main():
     
     pics_vert, pics_horz = imagecount = data["imagecount"]
 
-    #imagenames = data["images"]
     imagemap = precreateSubgifs(data["images"])
 
     pygame.init()
 
-    screen = pygame.display.set_mode(size, pygame.RESIZABLE)
+    screen = pygame.display.set_mode(initial_size, pygame.RESIZABLE)
     
     playfield = Field(pics_horz, pics_vert)
     playfield.createFields(imagemap)
@@ -115,15 +139,7 @@ def main():
                 if event.key == pygame.K_SPACE:
                     playfield.restart()            
 
-        screen.fill(black)
-        drawPlayfield(playfield, screen)
-        
-        myfont = pygame.font.SysFont("monospace", 15)
-        score = [0, 0]
-        label1 = myfont.render(f"Player 1:  {score[0]}", 1, (255,255,255))
-        screen.blit(label1, (100, 30))
-        label2 = myfont.render(f"Player 2:  {score[1]}", 1, (255,255,255))
-        screen.blit(label2, (1400, 30))
+        adaptElementSizes(screen, playfield)
 
         pygame.display.flip()
 
